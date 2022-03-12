@@ -1,0 +1,92 @@
+package com.company;
+import java.util.Scanner;
+
+class Main {
+
+    public static int fishScaleFactor;                 // population of the producers which the other populations are scaled down versions of
+    public static int[] fishData = {0, 0, 0};          // is an array that stores the population of each type of population: producer, primary consumer, tertiary consumer
+    public static double[] toxinLevels = {1, 0, 0};    // stores the toxin levels of the population type
+    public static int[] totalConsumption = {0,0};      // first is of producers, second is of primary consumers
+    public static double[] averageConsumption = {0,0}; // first is of producers, second is of primary consumers
+    public static Scanner userInput = new Scanner(System.in);
+
+    public static void averageConsumption(int temploc){
+        if(totalConsumption[temploc] == 0){
+            averageConsumption[temploc] = 0;
+        } else {
+            averageConsumption[temploc] = fishData[temploc+1] / totalConsumption[temploc];
+        }
+
+    }
+
+    public static void main(String[] args) {
+
+        System.out.println("how big do you want your producer population to be");
+        fishScaleFactor = userInput.nextInt();
+        //sets the population size for each type of population in the the order of producers, primary consumers, and tertiary consumers
+        fishData[0] = fishScaleFactor;
+        fishData[1] = fishScaleFactor/4;
+        fishData[2] = fishScaleFactor/16;
+
+        int dayCounter = 1;
+        System.out.println("Day: 0 \nproducer population = " + fishData[0] + " Primary consumer population = " + fishData[1] + " Tertiary consumer population = " + fishData[2]);
+        System.out.println("Producer Toxin Level = " + toxinLevels[0] + " unit(s)  Primary Consumer Toxicity = " + toxinLevels[1] + " unit(s) " +
+                "Tertiary Consumer Toxicity = " + toxinLevels[2] + " unit(s)\n");
+        while ((fishData[1] > 0 && fishData[2] > 0)) {
+            // resets the temporary variables
+            totalConsumption[0] = 0;
+            totalConsumption[1] = 0;
+            averageConsumption[0] = 0;
+            averageConsumption[1] = 0;
+
+            for (int i = 0; i < 24; i++) {                            // loops through number of hours in a day
+                for (int k = 0; k < fishData[1]; k++) {               // loops through number of primary consumer
+                    int randomTempValue= (int) (Math.random() * 100); // primary consumer has a 5 percent chance to eat a producer
+                    if (randomTempValue == 1 && fishData[0] != 0) {
+                        fishData[0]--;
+                        totalConsumption[0]++;
+                    }
+                }
+            }
+            // this is for finding the average amount of producer consumption per primary consumer
+            averageConsumption(0);
+            double toxicityTemp = toxinLevels[1];
+            toxinLevels[1] += (averageConsumption[0]) * (toxinLevels[0] * 0.025); // takes 2.5% of the toxin from producers
+
+            for (int f = 0; f < 24; f++) {                              // loops through the number of hours in a day
+                for (int n = 0; n < fishData[2]; n++) {                 // loops through the number of tertiary consumer
+                    int randomTempValue = (int) (Math.random() * 100);  // tertiary consumer has a 1 percent chance to eat a primary consumer
+                    if (randomTempValue == 1 && fishData[1] != 0) {
+                        fishData[1]--;
+                        totalConsumption[1]++;
+                    }
+                }
+            }
+            // this is for finding the average amount of primary consumer consumption per secondary consumer
+            averageConsumption(1);
+
+            toxinLevels[2] += (averageConsumption[1]) * (toxicityTemp * 0.025); // takes 2.5% of the toxin from primary consumers
+            System.out.println("Day: " + dayCounter);
+            System.out.println("Producer population = " + fishData[0] + " Primary Consumer Population = " + fishData[1] + " Tertiary Consumer Population = " + fishData[2]);
+            System.out.println("Producer Toxin Level = " + toxinLevels[0] + " unit(s)  Primary Consumer Toxicity = " + toxinLevels[1] + " unit(s) " +
+                    "Tertiary Consumer Toxicity = " + toxinLevels[2] + " unit(s)\n");
+            fishData[0] *= 1.05; // rate at which the population of producers grows, 5% every day
+            if (averageConsumption[0] >= 4) {
+                if ((dayCounter - 1) % 10 == 0) {
+                    fishData[1] *= 1.0125;  // rate at which the population of primary consumer grows, 1.25% every 10 days
+                }
+            } else {
+                fishData[1] -= fishData[1] * 0.125;
+            }
+            if (averageConsumption[1] >= 4) {
+                if ((dayCounter - 1) % 20 == 0)
+                    fishData[2] *= 1.025; // rate at which the population of tertiary consumer grows, 2.5% every 20 days
+            } else {
+                fishData[2] -= fishData[2] * 0.125;
+            }
+            if(fishData[0] != 0)
+                toxinLevels[0] *= 1.0615; // linear rate at which the producers increase toxin levels of 6.15% per day;
+            dayCounter++;
+        }
+    }
+}
